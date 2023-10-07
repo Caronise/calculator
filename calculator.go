@@ -9,36 +9,56 @@ import (
 
 // Add takes two numbers and returns the
 // result of adding them together.
-func Add(a, b float64) float64 {
-	return a + b
+func Add(inputs ...float64) float64 {
+	var total float64
+	for _, input := range inputs {
+		total += input
+	}
+	return total
 }
 
 // Subtract takes two numbers a and b, and
 // returns the result of subtracting b from a.
-func Subtract(a, b float64) float64 {
-	return a - b
+func Subtract(inputs ...float64) float64 {
+	var total float64
+	for _, input := range inputs {
+		total -= input
+	}
+	return total
 }
 
 // Multiply takes two numbers a and b, and
 // returns the result of multiplying a times b.
-func Multiply(a, b float64) float64 {
-	return a * b
+func Multiply(inputs ...float64) float64 {
+	var total float64 = 1 // Because if it's 0, all results will be 0...
+	for _, input := range inputs {
+		total = total * input
+	}
+	return total
 }
 
-func Divide(a, b float64) (float64, error) {
-	if b == 0 {
-		return 0, fmt.Errorf("invalid input: %f, %f  (division by zero is undefined)", a, b)
+func Divide(inputs ...float64) (float64, error) {
+	if len(inputs) == 0 {
+		return 0, fmt.Errorf("invalid input: %v (length is 0)", inputs)
 	}
-	return a / b, nil
+
+	var total float64 = inputs[0]
+	for _, input := range inputs[1:] {
+		if input == 0 {
+			return 0, fmt.Errorf("invalid input: %v (division by zero is undefined)", inputs)
+		}
+		total /= input
+	}
+	return total, nil
 }
 
 func CloseEnough(a, b, tolerance float64) bool {
 	return math.Abs(a-b) <= tolerance
 }
 
-func Sqrt(a float64) (float64, error) {
-	if a < 0 {
-		return 0, fmt.Errorf("invalid input: %f (Sqrt of negative numbers is undefined)", a)
+func Sqrt(input float64) (float64, error) {
+	if input < 0 {
+		return 0, fmt.Errorf("invalid input: %f (Sqrt of negative numbers is undefined)", input)
 	}
-	return math.Sqrt(a), nil
+	return math.Sqrt(input), nil
 }
