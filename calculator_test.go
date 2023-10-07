@@ -24,7 +24,8 @@ func TestAdd(t *testing.T) {
 	}
 
 	for _, tc := range testCases {
-		got := calculator.Add(tc.inputs...)
+		// Ignoring error since it's always nil
+		got, _ := calculator.Add(tc.inputs...)
 
 		if tc.want != got {
 			t.Errorf("\n%s\nAdd(%v)\nwanted %f, got %f", tc.name, tc.inputs, tc.want, got)
@@ -41,16 +42,27 @@ func TestSubtract(t *testing.T) {
 	}
 
 	testCases := []testCase{
-		{name: "Multiple positive numbers that subtract into a negative.",
-			inputs: []float64{50, 25, 10, 5, 4, 3, 2, 1}, want: -100},
-		{name: "Multiple negative numbers that subtract into a positive.",
-			inputs: []float64{-100, 100, -25, -10, -10, -5}, want: 50},
-		{name: "Multiple negative and positive numbers that cancel out.",
-			inputs: []float64{25, -25, 10, -10, 5, -5}, want: 0},
+		{name: "Multiple negative and positive numbers that subtract into a positive.",
+			inputs: []float64{25, -25, 10, -10, 5, -5}, want: 50},
+		{name: "Multiple negative numbers that subtract into a negative.",
+			inputs: []float64{-100, -50, -40}, want: -10},
+		{name: "Subtracting two positive numbers.",
+			inputs: []float64{100, 50}, want: 50},
+		{name: "Subtracting a positive number from a negative number.",
+			inputs: []float64{-50, 25}, want: -75},
+		{name: "Subtracting a negative number from a positive number.",
+			inputs: []float64{50, -25}, want: 75},
+		{name: "Subtracting multiple positive numbers.",
+			inputs: []float64{100, 25, 10, 5}, want: 60},
+		{name: "Subtracting a single number.",
+			inputs: []float64{100}, want: 100},
+		{name: "Subtracting zero from a number.",
+			inputs: []float64{100, 0}, want: 100},
 	}
 
 	for _, tc := range testCases {
-		got := calculator.Subtract(tc.inputs...)
+		// Ignoring error since it's always nil
+		got, _ := calculator.Subtract(tc.inputs...)
 
 		if tc.want != got {
 			t.Errorf("\n%s\nSubtract(%v)\nwanted %f, got %f", tc.name, tc.inputs, tc.want, got)
@@ -78,7 +90,8 @@ func TestMultiply(t *testing.T) {
 	}
 
 	for _, tc := range testCases {
-		got := calculator.Multiply(tc.inputs...)
+		// Ignoring error since it's always nil
+		got, _ := calculator.Multiply(tc.inputs...)
 
 		if tc.want != got {
 			t.Errorf("\n%s\nMultiply(%v)\nwanted %f, got %f", tc.name, tc.inputs, tc.want, got)
@@ -128,7 +141,6 @@ func TestDivide(t *testing.T) {
 
 func TestSqrt(t *testing.T) {
 	t.Parallel()
-
 	type testCase struct {
 		input       float64
 		want        float64
@@ -153,6 +165,39 @@ func TestSqrt(t *testing.T) {
 
 		if !calculator.CloseEnough(tc.want, got, 0.00001) {
 			t.Errorf("\nSqrt(%f)\nwanted %f, got %f", tc.input, tc.want, got)
+		}
+	}
+}
+
+func TestEvaluate(t *testing.T) {
+	t.Parallel()
+	type testCase struct {
+		name        string
+		input       string
+		want        float64
+		errExpected bool
+	}
+
+	testCases := []testCase{
+		{name: "Valid input int * int", input: "2 * 2", want: 4, errExpected: false},
+		{name: "Valid input int + float", input: "1 + 1.5", want: 2.5, errExpected: false},
+		{name: "Valid input int / int", input: "18   /   6", want: 3, errExpected: false},
+		{name: "Valid input int - float", input: "100 - 0.1", want: 99.9, errExpected: false},
+		{name: "Invalid input int+int", input: "2+2", want: 0, errExpected: true},
+		{name: "Invalid input int * int / int", input: "8 * 3 / 9", want: 0, errExpected: true},
+		{name: "Invalid input char * int", input: "x + 19", want: 0, errExpected: true},
+	}
+
+	for _, tc := range testCases {
+		got, err := calculator.Evaluate(tc.input)
+		var errReceived = err != nil
+
+		if tc.errExpected != errReceived {
+			t.Fatalf("\nEvaluate(%s): Unexpected error status: %v", tc.input, errReceived)
+		}
+
+		if !calculator.CloseEnough(got, tc.want, 0.000001) {
+			t.Errorf("\nEvaluate(%s)\nwanted %f, got %f", tc.input, tc.want, got)
 		}
 	}
 }
